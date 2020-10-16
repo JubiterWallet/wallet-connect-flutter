@@ -18,6 +18,14 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'https://jitpack.io' }
+
+        // 加载jubiter_plugin的libs文件夹
+        // todo: 在 android {} 中的 repositories {} 添加以下语句无效
+//        flatDir {
+//            dirs file('libs')
+//        }
+
     }
 }
 
@@ -39,5 +47,15 @@ android {
 }
 
 dependencies {
+    //implementation files('libs\\flutter.jar')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.annotation:annotation:1.1.0'
+
+    implementation "com.github.komputing.KHex:core:1.0.0-RC6"
+    implementation "com.github.komputing.KHex:extensions:1.0.0-RC6"
+
+    implementation "org.bouncycastle:bcprov-jdk15on:1.64"
+
+    implementation "com.squareup.moshi:moshi:1.8.0"
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
 }
