@@ -135,7 +135,7 @@ class MoshiPayloadAdapter(moshi: Moshi) : Session.PayloadAdapter {
         val to = data["to"] as? String ?: throw IllegalArgumentException("to key missing")
         val nonce = data["nonce"] as? String ?: (data["nonce"] as? Double)?.toLong()?.toString()
         val gasPrice = data["gasPrice"] as? String
-        val gasLimit = data["gasLimit"] as? String
+        val gasLimit = data["gas"] as? String
         val value = data["value"] as? String ?: "0x0"
         val txData = data["data"] as? String ?: throw IllegalArgumentException("data key missing")
         return Session.MethodCall.ETHSendTransaction(getId(), from, to, nonce, gasPrice, gasLimit, value, txData)
