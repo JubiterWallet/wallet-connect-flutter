@@ -51,16 +51,18 @@ public class WalletConnectManager {
         peerMeta = new Session.PeerMeta(wallConnectInfoConfig.getUrl(),
                 wallConnectInfoConfig.getName(),
                 wallConnectInfoConfig.getDescription(),
-                new ArrayList<String>(){{add(wallConnectInfoConfig.getIcon());}});
+                new ArrayList<String>() {{
+                    add(wallConnectInfoConfig.getIcon());
+                }});
         peerData = new Session.PeerData(wallConnectInfoConfig.getClientId(), peerMeta);
         WCLogUtil.init(wallConnectInfoConfig.getLogCallBack());
 
-        String latestProtocolUrl = WalletConnectSharedPreference.getLatestWCProtocol(context);
-        if (!TextUtils.isEmpty(latestProtocolUrl)) {
-            // 标记需要断开连接
-            needStopConnect = true;
-            startConnect(context, latestProtocolUrl);
-        }
+//        String latestProtocolUrl = WalletConnectSharedPreference.getLatestWCProtocol(context);
+//        if (!TextUtils.isEmpty(latestProtocolUrl)) {
+//            // 标记需要断开连接
+//            needStopConnect = true;
+//            startConnect(context, latestProtocolUrl);
+//        }
     }
 
     public void initConnectUtil(Context context) {
@@ -80,7 +82,10 @@ public class WalletConnectManager {
         WCLogUtil.i(TAG, "in startConnect protocolUrl:" + protocolUrl);
         try {
             // 如果已经连接过，先kill链接
-            stopConnect();
+            //stopConnect();
+            if (session != null) {
+                return;
+            }
             // 初始化链接工具
             initConnectUtil(context);
             // 解析链接
@@ -95,7 +100,7 @@ public class WalletConnectManager {
             session.init();
 //        session.offer();
             session.addCallback(sessionCallBack);
-            WalletConnectSharedPreference.setLatestWCProtocol(context, protocolUrl);
+            // WalletConnectSharedPreference.setLatestWCProtocol(context, protocolUrl);
         } catch (Exception e) {
             e.printStackTrace();
             // 出现异常，删除本地存储的json文件
@@ -109,6 +114,7 @@ public class WalletConnectManager {
         }
         session.kill();
         session.clearCallbacks();
+        session = null;
     }
 
     public void approveSession(ArrayList<String> ethAddresses, int mainChainId) {
@@ -180,7 +186,7 @@ public class WalletConnectManager {
             } else if (status == Session.Status.Connected.INSTANCE) {
                 WCLogUtil.i(TAG, "in sessionCallBack Session.Status.Connected.INSTANCE");
                 sessionConnected();
-            }  else if (status instanceof Session.Status.Error) {
+            } else if (status instanceof Session.Status.Error) {
                 //todo
                 wallConnectInfoConfig.getWalletConnectCallBack().onError(((Session.Status.Error) status).getThrowable().getLocalizedMessage());
             } else {
@@ -198,7 +204,7 @@ public class WalletConnectManager {
                     wallConnectInfoConfig.getWalletConnectCallBack().onCallRequestPersonalSign((Session.MethodCall.PersonalSign) call);
                 } else if (call instanceof Session.MethodCall.ETHSign) {
                     wallConnectInfoConfig.getWalletConnectCallBack().onCallRequestETHSign((Session.MethodCall.ETHSign) call);
-                }  else if (call instanceof Session.MethodCall.ETHSignTypedData) {
+                } else if (call instanceof Session.MethodCall.ETHSignTypedData) {
                     wallConnectInfoConfig.getWalletConnectCallBack().onCallRequestETHSignTypedData((Session.MethodCall.ETHSignTypedData) call);
                 } else if (call instanceof Session.MethodCall.ETHSendTransaction) {
                     wallConnectInfoConfig.getWalletConnectCallBack().onCallRequestETHSendTransaction((Session.MethodCall.ETHSendTransaction) call);
