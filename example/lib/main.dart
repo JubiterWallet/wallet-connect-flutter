@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wallet_connect_flutter/wallet_connect_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,8 +12,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> implements IWCHandler {
-  String _platformVersion = 'Unknown';
+  String title = "WalletConnectFlutter";
+  String url = "https://public.jubiterwallet.com.cn/uniswap";
   WalletConnectFlutter conn;
+
+  WebViewController _controller;
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -22,13 +27,6 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
   // Platform messages are asynchronous, so we initialize in an async method.
   void initPlatformState() async {
     conn = WalletConnectFlutter(handler: this);
-    var res = await conn.connect(
-        'wc:bc07300e-b3e5-4e40-896c-6333fb3b5cec@1?bridge=https%3A%2F%2Fbridge.walletconnect.org&key=ace82a685a0df5dda3c5d8488930420a1a235c7633071bda673e4288a41a1dab');
-    if (res.isError()) {
-      return;
-    }
-
-    print(res);
   }
 
   @override
@@ -36,13 +34,64 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: Text(
+            this.title,
+            style: TextStyle(fontSize: 14),
+          ),
+          backgroundColor: Color(0xFF151A35),
+          centerTitle: true,
+          elevation: 0,
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
+        body: Stack(children: <Widget>[
+          WebView(
+            initialUrl: this.url,
+            //JS执行模式 是否允许JS执行
+            javascriptMode: JavascriptMode.unrestricted,
+            onWebViewCreated: (controller) {
+              _controller = controller;
+            },
+            onPageFinished: (url) {
+              setState(() {
+                isLoading = false; // 页面加载完成，更新状态
+              });
+            },
+            navigationDelegate: (NavigationRequest request) {
+              setState(() {
+                isLoading = true; // 开始访问页面，更新状态
+              });
+              if (request.url.startsWith("wc:")) {
+                connect(request.url);
+                setState(() {
+                  isLoading = false;
+                });
+                return NavigationDecision.prevent;
+              }
+
+              return NavigationDecision.navigate;
+            },
+          ),
+          isLoading
+              ? Container(
+            color: Color(0xFF151A35),
+            child: Center(
+              child: CircularProgressIndicator(backgroundColor: Color(0xFF151A35)),
+            ),
+          )
+              : Container(),
+        ]),
       ),
     );
+  }
+
+  Future<void> connect(String uri) async {
+    if(!uri.contains('bridge')){
+      return;
+    }
+    var res = await conn.connect(uri);
+    if (res.isError()) {
+      return;
+    }
+    print(res);
   }
 
   @override
