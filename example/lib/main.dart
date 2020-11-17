@@ -44,6 +44,8 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
         ),
         body: Stack(children: <Widget>[
           WebView(
+            userAgent:
+                "Mozilla/5.0 (Linux; Android 4.4.4; SAMSUNG-SM-N900A Build/tt) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36",
             initialUrl: this.url,
             //JS执行模式 是否允许JS执行
             javascriptMode: JavascriptMode.unrestricted,
@@ -72,11 +74,12 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
           ),
           isLoading
               ? Container(
-            color: Color(0xFF151A35),
-            child: Center(
-              child: CircularProgressIndicator(backgroundColor: Color(0xFF151A35)),
-            ),
-          )
+                  color: Color(0xFF151A35),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                        backgroundColor: Color(0xFF151A35)),
+                  ),
+                )
               : Container(),
         ]),
       ),
@@ -84,7 +87,7 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
   }
 
   Future<void> connect(String uri) async {
-    if(!uri.contains('bridge')){
+    if (!uri.contains('bridge')) {
       return;
     }
     var res = await conn.connect(uri);
