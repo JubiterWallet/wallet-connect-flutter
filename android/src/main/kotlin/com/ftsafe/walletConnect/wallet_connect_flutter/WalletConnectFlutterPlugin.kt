@@ -168,7 +168,7 @@ public class WalletConnectFlutterPlugin : FlutterPlugin, MethodCallHandler, Even
 
     private fun approveCallRequest(call: MethodCall, result: Result) {
         try {
-            val id: Int? = call.argument("id")
+            val id: Long? = call.argument("id")
             val resultParams: String? = call.argument("result")
             walletConnectManager.approveRequest(id!!.toLong(), resultParams!!)
             val rev: HashMap<String, Any> = HashMap()
@@ -184,7 +184,7 @@ public class WalletConnectFlutterPlugin : FlutterPlugin, MethodCallHandler, Even
 
     private fun rejectCallRequest(call: MethodCall, result: Result) {
         try {
-            val id: Int? = call.argument("id")
+            val id: Long? = call.argument("id")
             val resultParams: String? = call.argument("message")
             walletConnectManager.rejectRequest(id!!.toLong(), -1, resultParams!!)// todo errorCode
             val rev: HashMap<String, Any> = HashMap()
