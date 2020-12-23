@@ -13,14 +13,14 @@ enum WalletConnectPluginError {
 
 abstract class IWCHandler {
   void onSessionRequest(int id, String requestInJson);
-  void onSessionDissconnect(String errInJson);
+  void onSessionDisconnect(String errInJson);
   //以下不同请求类型具体签名方式见 https://docs.walletconnect.org/json-rpc-api-methods/ethereum
   void onCallRequestPersonalSign(int id, String requestInJson);
   void onCallRequestEthSign(int id, String requestInJson);
   void onCallRequestEthSignTypedData(int id, String requestInJson);
   void onCallRequestEthSendTransaction(int id, String requestInJson);
   void onCallRequestEthSignTransaction(int id, String requestInJson);
-  void onCallRequestEthSendRawTransaction(String requestInJson);
+  void onCallRequestEthSendRawTransaction(int id, String requestInJson);
   void onError(String error);
 }
 
@@ -41,7 +41,7 @@ class WalletConnectFlutter {
           handler.onSessionRequest(params['id'], params['data']);
           break;
         case 'onSessionDissconnect':
-          handler.onSessionDissconnect(params);
+          handler.onSessionDisconnect(params);
           break;
         case 'onCallRequestPersonalSign':
           handler.onCallRequestPersonalSign(params['id'], params['rawJson']);
@@ -61,6 +61,9 @@ class WalletConnectFlutter {
           break;
         case 'onCallRequestEthSignTransaction':
           handler.onCallRequestEthSignTransaction(params['id'], params['rawJson']);
+          break;
+        case 'onCallRequestEthSendRawTransaction':
+          handler.onCallRequestEthSendRawTransaction(params['id'], params['rawJson']);
           break;
         case 'onError':
           handler.onError(params);
