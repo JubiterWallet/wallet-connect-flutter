@@ -8,7 +8,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
     
     
     var interactor: WCInteractor?
-    let clientMeta = WCPeerMeta(name: "WalletConnect SDK", url: "https://github.com/TrustWallet/wallet-connect-swift")
+    let clientMeta = WCPeerMeta(name: "MYKEY", url: "https://mykey.org")
  
     var eventSink: FlutterEventSink?
      
@@ -85,6 +85,10 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
     
     
     func killSession(result: @escaping  FlutterResult) {
+        guard interactor != nil else {
+            self.resultMsg(result: result, error: WalletConnectPluginError.none , data: nil, message: "")
+            return
+        }
         interactor?.killSession().done {
             self.resultMsg(result: result, error: WalletConnectPluginError.none , data: nil, message: "")
         }.cauterize()
@@ -153,8 +157,10 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
             do {
                 let json = JSONEncoder()
                 let data = try json.encode(peerParam);
-              let rowJson = String(data: data, encoding:String.Encoding.utf8)!
-
+                var rowJson = String(data: data, encoding:String.Encoding.utf8)!
+                let dict : NSDictionary = getDictionaryFromJSONString(jsonString: rowJson)
+                dict.setValue(dict["peerMeta"], forKey: "meta")
+                rowJson = getJSONStringFromDictionary(dictionary: dict)
                 self?.eventSink!([
                     "eventName":"onSessionRequest",
                     "params": [ "id":id,"data": rowJson] ,
@@ -263,3 +269,28 @@ enum WalletConnectPluginError : Int {
     case approveError
     case rejectError
 }
+
+
+func getDictionaryFromJSONString(jsonString:String) ->NSDictionary{
+ 
+    let jsonData:Data = jsonString.data(using: .utf8)!
+ 
+    let dict = try? JSONSerialization.jsonObject(with: jsonData, options: .mutableContainers)
+    if dict != nil {
+        return dict as! NSDictionary
+    }
+    return NSDictionary()
+     
+ 
+}
+
+func getJSONStringFromDictionary(dictionary:NSDictionary) -> String {
+      if (!JSONSerialization.isValidJSONObject(dictionary)) {
+          print("无法解析出JSONString")
+          return ""
+      }
+    let data : NSData! = try? JSONSerialization.data(withJSONObject: dictionary, options: []) as NSData?
+      let JSONString = NSString(data:data as Data,encoding: String.Encoding.utf8.rawValue)
+      return JSONString! as String
+
+  }
