@@ -13,7 +13,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> implements IWCHandler {
   String title = "WalletConnectFlutter";
-  String url = "https://public.jubiterwallet.com.cn/uniswap";
+  String url = "https://public.jubiterwallet.com.cn/walletConnect/";
   WalletConnectFlutter conn;
 
   WebViewController _controller;
@@ -90,16 +90,12 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
     if (!uri.contains('bridge')) {
       return;
     }
+    await conn.killSession();
     var res = await conn.connect(uri);
     if (res.isError()) {
       return;
     }
     print(res);
-  }
-
-  @override
-  void onCallRequestEthSendRawTransaction(String requestInJson) {
-    print(requestInJson);
   }
 
   @override
@@ -133,16 +129,21 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
   }
 
   @override
-  void onSessionDissconnect(String errInJson) {
-    print(errInJson);
-  }
-
-  @override
   void onSessionRequest(int id, String requestInJson) async {
     await conn.approveSession(
-      ['0x448ae09Ee40E4B755c4590eaEE82D1D069bfee91'],
+      ['0x2c70f383699004f9e7eff8d595b354f5785dc10b'],
       1,
     );
     print(requestInJson);
+  }
+
+  @override
+  void onCallRequestEthSendRawTransaction(int id, String requestInJson) {
+    print(requestInJson);
+  }
+
+  @override
+  void onSessionDisconnect(String errInJson) {
+    print(errInJson);
   }
 }

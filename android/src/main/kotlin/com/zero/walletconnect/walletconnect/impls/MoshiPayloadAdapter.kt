@@ -1,5 +1,6 @@
 package com.zero.walletconnect.walletconnect.impls
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -33,7 +34,6 @@ class MoshiPayloadAdapter(moshi: Moshi) : Session.PayloadAdapter {
     override fun parse(payload: String, key: String): Session.MethodCall {
         val encryptedPayload = payloadAdapter.fromJson(payload)
                 ?: throw IllegalArgumentException("Invalid json payload!")
-
         // TODO verify hmac
 
         val padding = PKCS7Padding()
@@ -278,6 +278,7 @@ class MoshiPayloadAdapter(moshi: Moshi) : Session.PayloadAdapter {
             )
 
     // TODO: @JsonClass(generateAdapter = true)
+    @Keep
     data class EncryptedPayload(
             @Json(name = "data") val data: String,
             @Json(name = "iv") val iv: String,
