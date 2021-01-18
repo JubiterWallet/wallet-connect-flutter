@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:wallet_connect_flutter/wallet_connect_flutter.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,8 +16,10 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
   String url = "https://public.jubiterwallet.com.cn/walletConnect/";
   WalletConnectFlutter conn;
 
-  WebViewController _controller;
+  //WebViewController _controller;
+  InAppWebViewController _controller;
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -43,35 +45,64 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
           elevation: 0,
         ),
         body: Stack(children: <Widget>[
-          WebView(
-            userAgent:
-                "Mozilla/5.0 (Linux; Android 4.4.4; SAMSUNG-SM-N900A Build/tt) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36",
-            initialUrl: this.url,
-            //JS执行模式 是否允许JS执行
-            javascriptMode: JavascriptMode.unrestricted,
-            onWebViewCreated: (controller) {
-              _controller = controller;
-            },
-            onPageFinished: (url) {
-              setState(() {
-                isLoading = false; // 页面加载完成，更新状态
-              });
-            },
-            navigationDelegate: (NavigationRequest request) {
-              setState(() {
-                isLoading = true; // 开始访问页面，更新状态
-              });
-              if (request.url.startsWith("wc:")) {
-                connect(request.url);
+          // WebView(
+          //   userAgent:
+          //       "Mozilla/5.0 (Linux; Android 4.4.4; SAMSUNG-SM-N900A Build/tt) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36",
+          //   initialUrl: this.url,
+          //   //JS执行模式 是否允许JS执行
+          //   javascriptMode: JavascriptMode.unrestricted,
+          //   onWebViewCreated: (controller) {
+          //     _controller = controller;
+          //   },
+          //   onPageFinished: (url) {
+          //     setState(() {
+          //       isLoading = false; // 页面加载完成，更新状态
+          //     });
+          //   },
+          //   navigationDelegate: (NavigationRequest request) {
+          //     setState(() {
+          //       isLoading = true; // 开始访问页面，更新状态
+          //     });
+          //     if (request.url.startsWith("wc:")) {
+          //       connect(request.url);
+          //       setState(() {
+          //         isLoading = false;
+          //       });
+          //       return NavigationDecision.prevent;
+          //     }
+          //
+          //     return NavigationDecision.navigate;
+          //   },
+          // ),
+          InAppWebView(
+              initialUrl: this.url,
+              initialOptions: InAppWebViewGroupOptions(
+                  crossPlatform: InAppWebViewOptions(
+                      debuggingEnabled: true,
+                      // userAgent: ,
+                      useShouldOverrideUrlLoading: true)),
+              onWebViewCreated: (InAppWebViewController controller) {
+                _controller = controller;
+              },
+              onLoadStart: (InAppWebViewController controller, String url) {
+                setState(() {
+                  isLoading = true; // 开始访问页面，更新状态
+                });
+              },
+              onLoadStop:
+                  (InAppWebViewController controller, String url) async {
                 setState(() {
                   isLoading = false;
                 });
-                return NavigationDecision.prevent;
-              }
-
-              return NavigationDecision.navigate;
-            },
-          ),
+              },
+              shouldOverrideUrlLoading: (controller, request) async {
+                var url = request.url;
+                if (url.startsWith("wc:")) {
+                  connect(request.url);
+                  return ShouldOverrideUrlLoadingAction.CANCEL;
+                }
+                return ShouldOverrideUrlLoadingAction.ALLOW;
+              }),
           isLoading
               ? Container(
                   color: Color(0xFF151A35),
