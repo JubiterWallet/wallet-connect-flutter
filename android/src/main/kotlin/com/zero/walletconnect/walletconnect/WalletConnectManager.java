@@ -57,12 +57,12 @@ public class WalletConnectManager {
         peerData = new Session.PeerData(wallConnectInfoConfig.getClientId(), peerMeta);
         WCLogUtil.init(wallConnectInfoConfig.getLogCallBack());
 
-//        String latestProtocolUrl = WalletConnectSharedPreference.getLatestWCProtocol(context);
-//        if (!TextUtils.isEmpty(latestProtocolUrl)) {
-//            // 标记需要断开连接
-//            needStopConnect = true;
-//            startConnect(context, latestProtocolUrl);
-//        }
+        String latestProtocolUrl = WalletConnectSharedPreference.getLatestWCProtocol(context);
+        if (!TextUtils.isEmpty(latestProtocolUrl)) {
+            // 标记需要断开连接
+            needStopConnect = true;
+            startConnect(context, latestProtocolUrl);
+        }
     }
 
     public void initConnectUtil(Context context) {
@@ -82,7 +82,7 @@ public class WalletConnectManager {
         WCLogUtil.i(TAG, "in startConnect protocolUrl:" + protocolUrl);
         try {
             // 如果已经连接过，先kill链接
-            //stopConnect();
+            stopConnect();
             if (session != null) {
                 return;
             }
@@ -100,7 +100,7 @@ public class WalletConnectManager {
             session.init();
 //        session.offer();
             session.addCallback(sessionCallBack);
-            // WalletConnectSharedPreference.setLatestWCProtocol(context, protocolUrl);
+            WalletConnectSharedPreference.setLatestWCProtocol(context, protocolUrl);
         } catch (Exception e) {
             e.printStackTrace();
             // 出现异常，删除本地存储的json文件
