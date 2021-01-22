@@ -8,7 +8,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
     
     
     var interactor: WCInteractor?
-    let clientMeta = WCPeerMeta(name: "MYKEY", url: "https://mykey.org")
+    let clientMeta = WCPeerMeta(name: "MYKEY", url: "https://mykey.org",description:"MYKEY Lab" ,icons: ["https://cdn.mykey.tech/mykey-website/static/img/favicon-32.ico"])
  
     var eventSink: FlutterEventSink?
      
@@ -118,14 +118,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
             resultMsg(result: result, error: WalletConnectPluginError.uriError , data: nil, message: "")
             return
         }
-        if let i = interactor, i.state == .connected {
-            i.killSession().done {
-                self.resultMsg(result: result, error: WalletConnectPluginError.allreadyConnected , data: nil, message: "")
-                return
-            }.cauterize()
-        } else {
-            connectTo(result:result,session: session)
-        }
+        connectTo(result:result,session: session)
     }
     
     func connectTo(result:@escaping  FlutterResult,session: WCSession) {
@@ -221,9 +214,13 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
         interactor.eth.onTransaction = { [weak self] (id, event, transaction) in
             do {
                 let data = try! JSONEncoder().encode(transaction)
-                let rowJson = String(data: data, encoding:String.Encoding.utf8)!
+                var rowJson = String(data: data, encoding:String.Encoding.utf8)!
                 switch event {
+//                rowJson    String    "{\"value\":\"0x9184e72a000\",\"to\":\"0x7a250d5630b4cf539739df2c5dacb4c659f2488d\",\"gas\":\"0x60b9d\",\"data\":\"0x7ff36ab500000000000000000000000000000000000000000000000003504cd5942e0cc200000000000000000000000000000000000000000000000000000000000000800000000000000000000000002c70f383699004f9e7eff8d595b354f5785dc10b000000000000000000000000000000000000000000000000000000006008f9e70000000000000000000000000000000000000000000000000000000000000004000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7000000000000000000000000744d70fdbe2ba4cf95131626614a1763df805b9e\",\"from\":\"0x2c70f383699004f9e7eff8d595b354f5785dc10b\"}"
                 case .ethSendTransaction:
+                    let dict : NSDictionary = getDictionaryFromJSONString(jsonString: rowJson)
+                    dict.setValue(dict["gas"], forKey: "gasLimit")
+                    rowJson = getJSONStringFromDictionary(dictionary: dict)
                     self?.eventSink!([
                         "eventName":"onCallRequestEthSendTransaction",
                         "params": ["id":id,"rawJson":rowJson]  ,

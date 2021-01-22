@@ -79,7 +79,8 @@ class _MyAppState extends State<MyApp> implements IWCHandler {
               initialOptions: InAppWebViewGroupOptions(
                   crossPlatform: InAppWebViewOptions(
                       debuggingEnabled: true,
-                      // userAgent: ,
+                      userAgent:
+                          "Mozilla/5.0 (Linux; Android 4.4.4; SAMSUNG-SM-N900A Build/tt) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/33.0.0.0 Mobile Safari/537.36",
                       useShouldOverrideUrlLoading: true)),
               onWebViewCreated: (InAppWebViewController controller) {
                 _controller = controller;

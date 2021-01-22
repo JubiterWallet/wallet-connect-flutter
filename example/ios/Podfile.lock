@@ -1,6 +1,8 @@
 PODS:
   - CryptoSwift (1.1.3)
   - Flutter (1.0.0)
+  - flutter_inappwebview (0.0.1):
+    - Flutter
   - PromiseKit (6.11.0):
     - PromiseKit/CorePromise (= 6.11.0)
     - PromiseKit/Foundation (= 6.11.0)
@@ -24,13 +26,11 @@ PODS:
     - PromiseKit (~> 6.11.0)
     - Starscream (~> 3.1.1)
     - TrustWalletCore
-  - webview_flutter (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
   - wallet_connect_flutter (from `.symlinks/plugins/wallet_connect_flutter/ios`)
-  - webview_flutter (from `.symlinks/plugins/webview_flutter/ios`)
 
 SPEC REPOS:
   trunk:
@@ -43,20 +43,20 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_inappwebview:
+    :path: ".symlinks/plugins/flutter_inappwebview/ios"
   wallet_connect_flutter:
     :path: ".symlinks/plugins/wallet_connect_flutter/ios"
-  webview_flutter:
-    :path: ".symlinks/plugins/webview_flutter/ios"
 
 SPEC CHECKSUMS:
   CryptoSwift: 6b6e488df0598b3e9fa49254ed1a65e8c1b1e10b
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  flutter_inappwebview: 69dfbac46157b336ffbec19ca6dfd4638c7bf189
   PromiseKit: e4863d06976e7dee5e41c04fc7371c16b3600292
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   SwiftProtobuf: ecbec1be9036d15655f6b3443a1c4ea693c97932
   TrustWalletCore: 307d24dbe596bdeb2ae27b64e7b37f908d430773
   wallet_connect_flutter: 873c307389c312d4d58883c56d63eb4350810ed5
-  webview_flutter: d2b4d6c66968ad042ad94cbb791f5b72b4678a96
 
 PODFILE CHECKSUM: 25058f376a70928b936ea3dbcd6ee04e1bde5efc
 
