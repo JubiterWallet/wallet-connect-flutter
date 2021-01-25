@@ -113,13 +113,21 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
         }
     }
     
-    func connect(result: @escaping  FlutterResult,string: String)    {
+      func connect(result: @escaping  FlutterResult,string: String)    {
         guard  let session = WCSession.from(string: string) else {
             resultMsg(result: result, error: WalletConnectPluginError.uriError , data: nil, message: "")
             return
         }
-        connectTo(result:result,session: session)
+        if let i = interactor, i.state == .connected {
+            i.killSession().done {
+                self.connectTo(result:result,session: session)
+                return
+            }.cauterize()
+        } else {
+                connectTo(result:result,session: session)
+        }
     }
+    
     
     func connectTo(result:@escaping  FlutterResult,session: WCSession) {
         print("==> session", session)
