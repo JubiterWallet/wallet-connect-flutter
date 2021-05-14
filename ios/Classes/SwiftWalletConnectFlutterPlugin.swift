@@ -1,7 +1,6 @@
 import Flutter
 import UIKit
 import PromiseKit
-import TrustWalletCore
 
 public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,FlutterPlugin {
     
