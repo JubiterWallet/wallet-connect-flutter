@@ -2,7 +2,7 @@ group 'com.ftsafe.walletConnect.wallet_connect_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.3.50'
+    ext.kotlin_version = '1.5.21'
     repositories {
         google()
         jcenter()
@@ -49,10 +49,10 @@ android {
 dependencies {
     //implementation files('libs\\flutter.jar')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.annotation:annotation:1.1.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
 
-    implementation "com.github.komputing.KHex:core:1.0.0-RC6"
-    implementation "com.github.komputing.KHex:extensions:1.0.0-RC6"
+    implementation "com.github.komputing.KHex:core:1.1.2"
+    implementation "com.github.komputing.KHex:extensions:1.1.2"
 
     implementation "org.bouncycastle:bcprov-jdk15on:1.64"
 

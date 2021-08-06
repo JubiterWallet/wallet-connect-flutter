@@ -17,14 +17,14 @@ public class WalletConnectUtil {
         if (TextUtils.isEmpty(protocol)) {
             return false;
         }
-        Session.Config config = parseWalletConnectProtocol(protocol);
+        Session.FullyQualifiedConfig config = parseWalletConnectProtocol(protocol);
         if (null == config || TextUtils.isEmpty(config.getHandshakeTopic()) || TextUtils.isEmpty(config.getBridge()) || TextUtils.isEmpty(config.getKey())) {
             return false;
         }
         return true;
     }
 
-    public static Session.Config parseWalletConnectProtocol(String protocolUrl) {
+    public static Session.FullyQualifiedConfig parseWalletConnectProtocol(String protocolUrl) {
         if (TextUtils.isEmpty(protocolUrl)) {
             WCLogUtil.e(TAG, "in");
             return null;
@@ -35,7 +35,7 @@ public class WalletConnectUtil {
         HashMap<String, String> paramMap = getParamsMap(params);
         String bridge = paramMap.get("bridge");
         String key = paramMap.get("key");
-        return new Session.Config(handshakeTopic, bridge, key, "wc", 1);
+        return new Session.FullyQualifiedConfig(handshakeTopic, bridge, key, "wc", 1);
     }
 
     private static HashMap<String, String> getParamsMap(String[] params) {

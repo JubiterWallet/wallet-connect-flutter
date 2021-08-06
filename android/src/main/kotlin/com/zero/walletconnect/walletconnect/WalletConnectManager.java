@@ -89,7 +89,7 @@ public class WalletConnectManager {
             // 初始化链接工具
             initConnectUtil(context);
             // 解析链接
-            Session.Config config = WalletConnectUtil.parseWalletConnectProtocol(protocolUrl);
+            Session.FullyQualifiedConfig config = WalletConnectUtil.parseWalletConnectProtocol(protocolUrl);
             // 创建会话框
             session = new WCSession(config,
                     new MoshiPayloadAdapter(moshi),

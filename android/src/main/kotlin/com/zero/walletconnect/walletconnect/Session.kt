@@ -1,5 +1,6 @@
 package com.zero.walletconnect.walletconnect
 
+import androidx.annotation.Keep
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -25,15 +26,26 @@ interface Session {
     fun removeCallback(cb: Callback)
     fun clearCallbacks()
 
+    data class FullyQualifiedConfig(
+            val handshakeTopic: String,
+            val bridge: String,
+            val key: String,
+            val protocol: String = "wc",
+            val version: Int = 1
+    )
+
     data class Config(
-        val handshakeTopic: String,
-        val bridge: String,
-        val key: String,
-        val protocol: String = "wc",
-        val version: Int = 1
+            val handshakeTopic: String,
+            val bridge: String? = null,
+            val key: String? = null,
+            val protocol: String = "wc",
+            val version: Int = 1
     ) {
-        fun toWCUri(): String =
-                "wc:$handshakeTopic@$version?bridge=${URLEncoder.encode(bridge, "UTF-8")}&key=$key"
+        fun toWCUri() = "wc:$handshakeTopic@$version?bridge=${URLEncoder.encode(bridge, "UTF-8")}&key=$key"
+
+        fun isFullyQualifiedConfig() = bridge != null && key != null
+        fun toFullyQualifiedConfig() = FullyQualifiedConfig(handshakeTopic, bridge!!, key!!, protocol, version)
+
         companion object {
             fun fromWCUri(uri: String): Config {
                 val protocolSeparator = uri.indexOf(':')
@@ -41,13 +53,19 @@ interface Session {
                 val versionSeparator = uri.indexOf('?')
                 val protocol = uri.substring(0, protocolSeparator)
                 val handshakeTopic = uri.substring(protocolSeparator + 1, handshakeTopicSeparator)
-                val version = Integer.valueOf(uri.substring(handshakeTopicSeparator + 1, versionSeparator))
-                val params = uri.substring(versionSeparator + 1).split("&").associate {
-                    it.split("=").let { param -> param.first() to URLDecoder.decode(param[1], "UTF-8") }
+
+                return if (versionSeparator > 0) {
+                    val version = Integer.valueOf(uri.substring(handshakeTopicSeparator + 1, versionSeparator))
+                    val params = uri.substring(versionSeparator + 1).split("&").associate {
+                        it.split("=").let { param -> param.first() to URLDecoder.decode(param[1], "UTF-8") }
+                    }
+                    val bridge = params["bridge"] ?: throw IllegalArgumentException("Missing bridge param in URI")
+                    val key = params["key"] ?: throw IllegalArgumentException("Missing key param in URI")
+                    Config(handshakeTopic, bridge, key, protocol, version)
+                } else {
+                    val version = Integer.valueOf(uri.substring(handshakeTopicSeparator + 1))
+                    Config(handshakeTopic, protocol, version = version)
                 }
-                val bridge = params["bridge"] ?: throw IllegalArgumentException("Missing bridge param in URI")
-                val key = params["key"] ?: throw IllegalArgumentException("Missing key param in URI")
-                return Config(handshakeTopic, bridge, key, protocol, version)
             }
         }
     }
@@ -114,14 +132,17 @@ interface Session {
     sealed class MethodCall(private val internalId: Long) {
         fun id() = internalId
 
+        @Keep
         data class SessionRequest(val id: Long, val peer: PeerData) : MethodCall(id)
 
+        @Keep
         data class SessionUpdate(val id: Long, val params: SessionParams) : MethodCall(id)
 
+        @Keep
         data class ETHSendTransaction(
             val id: Long,
             val from: String,
-            val to: String,
+            val to: String?,
             val nonce: String?,
             val gasPrice: String?,
             val gasLimit: String?,
@@ -129,6 +150,7 @@ interface Session {
             val data: String
         ) : MethodCall(id)
 
+        @Keep
         data class ETHSignTransaction(
             val id: Long,
             val from: String,
@@ -140,23 +162,32 @@ interface Session {
             val data: String
         ) : MethodCall(id)
 
+        @Keep
         data class ETHSendRawTransaction(
             val id: Long,
             val address: String
         ) : MethodCall(id)
 
+        @Keep
         data class ETHSign(val id: Long, val address: String, val message: String) : MethodCall(id)
 
+        @Keep
         data class Custom(val id: Long, val method: String, val params: List<*>?) : MethodCall(id)
 
+        @Keep
         data class Response(val id: Long, val result: Any?, val error: Error? = null) : MethodCall(id)
 
+        @Keep
         data class PersonalSign(val id: Long, val message: String, val account: String) : MethodCall(id)
 
+        @Keep
         data class ETHSignTypedData(val id: Long, val account: String, val message: String) : MethodCall(id)
     }
 
+    @Keep
     data class PeerData(val id: String, val meta: PeerMeta?)
+
+    @Keep
     data class PeerMeta(
         val url: String? = null,
         val name: String? = null,
@@ -164,6 +195,9 @@ interface Session {
         val icons: List<String>? = null
     )
 
+    @Keep
     data class SessionParams(val approved: Boolean, val chainId: Long?, val accounts: List<String>?, val peerData: PeerData?)
+
+    @Keep
     data class Error(val code: Long, val message: String)
 }

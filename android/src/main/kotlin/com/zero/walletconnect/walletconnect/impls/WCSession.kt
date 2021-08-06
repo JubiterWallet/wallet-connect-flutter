@@ -10,7 +10,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class WCSession(
-        private val config: Session.Config,
+        private val config: Session.FullyQualifiedConfig,
         private val payloadAdapter: Session.PayloadAdapter,
         private val sessionStore: WCSessionStore,
         transportBuilder: Session.Transport.Builder,
@@ -309,7 +309,7 @@ interface WCSessionStore {
     fun list(): List<State>
 
     data class State(
-            val config: Session.Config,
+            val config: Session.FullyQualifiedConfig,
             val clientData: Session.PeerData,
             val peerData: Session.PeerData?,
             val handshakeId: Long?,
