@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import PromiseKit
+import Starscream
 
 public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,FlutterPlugin {
     
@@ -8,9 +9,9 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
     
     var interactor: WCInteractor?
     let clientMeta = WCPeerMeta(name: "MYKEY", url: "https://mykey.org",description:"MYKEY Lab" ,icons: ["https://cdn.mykey.tech/mykey-website/static/img/favicon-32.ico"])
- 
+    
     var eventSink: FlutterEventSink?
-     
+    
     static var eventChannel :FlutterEventChannel?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -88,9 +89,8 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
             self.resultMsg(result: result, error: WalletConnectPluginError.none , data: nil, message: "")
             return
         }
-        interactor?.killSession().done {
-            self.resultMsg(result: result, error: WalletConnectPluginError.none , data: nil, message: "")
-        }.cauterize()
+        interactor?.killSession()
+        self.resultMsg(result: result, error: WalletConnectPluginError.none , data: nil, message: "")
     }
     
     
@@ -112,7 +112,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
         }
     }
     
-      func connect(result: @escaping  FlutterResult,string: String)    {
+    func connect(result: @escaping  FlutterResult,string: String)    {
         guard  let session = WCSession.from(string: string) else {
             resultMsg(result: result, error: WalletConnectPluginError.uriError , data: nil, message: "")
             return
@@ -123,7 +123,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
                 return
             }.cauterize()
         } else {
-                connectTo(result:result,session: session)
+            connectTo(result:result,session: session)
         }
     }
     
@@ -150,7 +150,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
                 "eventName":"onError",
                 "params":error.localizedDescription,
             ])
-         }
+        }
         
         
         interactor.onSessionRequest = { [weak self] (id, peerParam) in
@@ -173,12 +173,23 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
         }
         
         interactor.onDisconnect = { [weak self] (error) in
-        
-            self?.eventSink!([
-                "eventName":"onSessionDissconnect",
-                "params": error?.localizedDescription ,
-            ])
-         }
+            if(error is Starscream.WSError){
+                let code = (error! as! Starscream.WSError).code
+                if code == 1000{
+                    self?.eventSink!([
+                        "eventName":"onSessionDissconnect",
+                        "params": nil ,
+                    ])
+                }
+            }
+            else{
+                self?.eventSink!([
+                    "eventName":"onSessionDissconnect",
+                    "params": error?.localizedDescription ,
+                ])
+            }
+            
+        }
         
         interactor.eth.onSign = { [weak self] (id, payload) in
             do {
@@ -186,33 +197,33 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
                 case .sign(_, let raw ):
                     let json = JSONEncoder()
                     let data = try json.encode(raw);
-                  let rowJson = String(data: data, encoding:String.Encoding.utf8)!
+                    let rowJson = String(data: data, encoding:String.Encoding.utf8)!
                     self?.eventSink!([
                         "eventName":"onCallRequestEthSign",
                         "params": ["id":id,"rawJson":rowJson]  ,
                     ])
-                     
+                    
                 case .personalSign(_, let raw):
                     let json = JSONEncoder()
                     let data = try json.encode(raw);
-                  let rowJson = String(data: data, encoding:String.Encoding.utf8)!
+                    let rowJson = String(data: data, encoding:String.Encoding.utf8)!
                     self?.eventSink!([
                         "eventName":"onCallRequestPersonalSign",
                         "params": ["id":id,"rawJson":rowJson]  ,
                     ])
-                     
+                    
                 case .signTypeData(_, _, let raw):
                     let json = JSONEncoder()
                     let data = try json.encode(raw);
-                  let rowJson = String(data: data, encoding:String.Encoding.utf8)!
+                    let rowJson = String(data: data, encoding:String.Encoding.utf8)!
                     self?.eventSink!([
                         "eventName":"onCallRequestEthSignTypedData",
                         "params": ["id":id,"rawJson":rowJson] ,
                     ])
-                     
-               
+                    
+                    
                 }
-        
+                
             } catch  {
                 
             }
@@ -223,7 +234,7 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
                 let data = try! JSONEncoder().encode(transaction)
                 var rowJson = String(data: data, encoding:String.Encoding.utf8)!
                 switch event {
-//                rowJson    String    "{\"value\":\"0x9184e72a000\",\"to\":\"0x7a250d5630b4cf539739df2c5dacb4c659f2488d\",\"gas\":\"0x60b9d\",\"data\":\"0x7ff36ab500000000000000000000000000000000000000000000000003504cd5942e0cc200000000000000000000000000000000000000000000000000000000000000800000000000000000000000002c70f383699004f9e7eff8d595b354f5785dc10b000000000000000000000000000000000000000000000000000000006008f9e70000000000000000000000000000000000000000000000000000000000000004000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7000000000000000000000000744d70fdbe2ba4cf95131626614a1763df805b9e\",\"from\":\"0x2c70f383699004f9e7eff8d595b354f5785dc10b\"}"
+                //                rowJson    String    "{\"value\":\"0x9184e72a000\",\"to\":\"0x7a250d5630b4cf539739df2c5dacb4c659f2488d\",\"gas\":\"0x60b9d\",\"data\":\"0x7ff36ab500000000000000000000000000000000000000000000000003504cd5942e0cc200000000000000000000000000000000000000000000000000000000000000800000000000000000000000002c70f383699004f9e7eff8d595b354f5785dc10b000000000000000000000000000000000000000000000000000000006008f9e70000000000000000000000000000000000000000000000000000000000000004000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000c00e94cb662c3520282e6f5717214004a7f26888000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7000000000000000000000000744d70fdbe2ba4cf95131626614a1763df805b9e\",\"from\":\"0x2c70f383699004f9e7eff8d595b354f5785dc10b\"}"
                 case .ethSendTransaction:
                     let dict : NSDictionary = getDictionaryFromJSONString(jsonString: rowJson)
                     dict.setValue(dict["gas"], forKey: "gasLimit")
@@ -232,27 +243,27 @@ public class SwiftWalletConnectFlutterPlugin: NSObject,FlutterStreamHandler,Flut
                         "eventName":"onCallRequestEthSendTransaction",
                         "params": ["id":id,"rawJson":rowJson]  ,
                     ])
-                     
+                    
                 case .ethSignTransaction:
                     self?.eventSink!([
                         "eventName":"onCallRequestEthSignTransaction",
                         "params": ["id":id,"rawJson":rowJson]  ,
                     ])
-                     
+                    
                 default:
-                break
-                     
-               
+                    break
+                    
+                    
                 }
             }
             
         }
-         
+        
     }
     
     
     
- 
+    
     func resultMsg( result:  FlutterResult,error:WalletConnectPluginError,data : [String: Any]?,message : String)  {
         
         result([
@@ -276,25 +287,25 @@ enum WalletConnectPluginError : Int {
 
 
 func getDictionaryFromJSONString(jsonString:String) ->NSDictionary{
- 
+    
     let jsonData:Data = jsonString.data(using: .utf8)!
- 
+    
     let dict = try? JSONSerialization.jsonObject(with: jsonData, options: .mutableContainers)
     if dict != nil {
         return dict as! NSDictionary
     }
     return NSDictionary()
-     
- 
+    
+    
 }
 
 func getJSONStringFromDictionary(dictionary:NSDictionary) -> String {
-      if (!JSONSerialization.isValidJSONObject(dictionary)) {
-          print("无法解析出JSONString")
-          return ""
-      }
+    if (!JSONSerialization.isValidJSONObject(dictionary)) {
+        print("无法解析出JSONString")
+        return ""
+    }
     let data : NSData! = try? JSONSerialization.data(withJSONObject: dictionary, options: []) as NSData?
-      let JSONString = NSString(data:data as Data,encoding: String.Encoding.utf8.rawValue)
-      return JSONString! as String
-
-  }
+    let JSONString = NSString(data:data as Data,encoding: String.Encoding.utf8.rawValue)
+    return JSONString! as String
+    
+}
